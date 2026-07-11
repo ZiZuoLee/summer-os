@@ -1,0 +1,55 @@
+name: Encrypted database backup
+
+on:
+  schedule:
+    - cron: "17 18 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-database-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    name: Dump, validate, and encrypt
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SOURCE_DATABASE_URL: ${{ secrets.SUPABASE_PRODUCTION_DB_URL }}
+      AGE_RECIPIENT: ${{ secrets.BACKUP_AGE_RECIPIENT }}
+      PG_DUMP_IMAGE: postgres:17-alpine
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Validate required secrets
+        shell: bash
+        run: |
+          test -n "$SOURCE_DATABASE_URL" || { echo "SUPABASE_PRODUCTION_DB_URL is not configured." >&2; exit 1; }
+          test -n "$AGE_RECIPIENT" || { echo "BACKUP_AGE_RECIPIENT is not configured." >&2; exit 1; }
+
+      - name: Install age
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes age
+
+      - name: Pull pinned-major PostgreSQL client image
+        run: docker pull "$PG_DUMP_IMAGE"
+
+      - name: Create encrypted backup
+        id: backup
+        run: bash scripts/backup-production.sh
+
+      - name: Upload encrypted artifact only
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.backup.outputs.backup_name }}
+          path: ${{ steps.backup.outputs.backup_path }}
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 7

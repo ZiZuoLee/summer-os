@@ -1,0 +1,2 @@
+-- Global templates are inserted by migrations. Keep local seed data synthetic and
+-- create test users inside pgTAP tests so this file is safe in every environment.

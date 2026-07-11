@@ -1,0 +1,32 @@
+name: Read-only deployment smoke test
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: Exact HTTPS deployment origin to test
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+
+      - name: Run public read-only checks
+        env:
+          TARGET_URL: ${{ inputs.target_url }}
+        run: node scripts/smoke-test.mjs "$TARGET_URL"

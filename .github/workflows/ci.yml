@@ -1,0 +1,136 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "22"
+  APP_ENV: test
+  NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3100
+  NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-anon-key-not-a-production-credential
+  SUPABASE_SERVICE_ROLE_KEY: ci-placeholder-service-role-key-not-a-production-credential
+  NEXT_PUBLIC_TURNSTILE_SITE_KEY: 1x00000000000000000000AA
+  TURNSTILE_SECRET_KEY: 1x0000000000000000000000000000000AA
+  BETA_SIGNUP_LIMIT: "100"
+
+jobs:
+  quality:
+    name: Static, unit, and build gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit and component tests
+        run: npm run test
+
+      - name: Production build
+        run: npm run build
+
+      - name: Reject critical production dependency advisories
+        run: npm audit --omit=dev --audit-level=critical
+
+  database-and-e2e:
+    name: Database isolation and browser gates
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Start local Supabase and rebuild migrations
+        run: |
+          npx supabase start
+          npx supabase db reset
+
+      - name: Export local Supabase values for tests
+        shell: bash
+        run: |
+          status_json="$(npx supabase status -o json)"
+          api_url="$(jq -r '.API_URL // empty' <<<"$status_json")"
+          public_key="$(jq -r '.PUBLISHABLE_KEY // .ANON_KEY // empty' <<<"$status_json")"
+          server_key="$(jq -r '.SECRET_KEY // .SERVICE_ROLE_KEY // empty' <<<"$status_json")"
+          test -n "$api_url" || { echo "Local Supabase API_URL was unavailable." >&2; exit 1; }
+          test -n "$public_key" || { echo "Local Supabase browser key was unavailable." >&2; exit 1; }
+          test -n "$server_key" || { echo "Local Supabase server key was unavailable." >&2; exit 1; }
+          {
+            echo "NEXT_PUBLIC_SUPABASE_URL=$api_url"
+            echo "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=$public_key"
+            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$public_key"
+            echo "SUPABASE_SECRET_KEY=$server_key"
+            echo "SUPABASE_SERVICE_ROLE_KEY=$server_key"
+          } >>"$GITHUB_ENV"
+
+      - name: Database and RLS integration tests
+        run: |
+          npx supabase test db
+          npm run test:db
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: End-to-end tests
+        run: npm run test:e2e
+
+      - name: Real email authentication lifecycle
+        env:
+          E2E_REAL_AUTH: "true"
+        run: npx playwright test tests/e2e/auth-lifecycle.real.spec.ts --project=desktop-chromium
+
+      - name: Upload browser failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-failure-${{ github.run_id }}
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Stop local Supabase
+        if: always()
+        run: npx supabase stop --no-backup
