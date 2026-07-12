@@ -1,6 +1,6 @@
 /* Summer OS caches public static assets only. Authenticated data is never cached. */
 const CACHE_PREFIX = "summer-os-static-";
-const CACHE_VERSION = "v1";
+const CACHE_VERSION = "v2";
 const STATIC_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}`;
 const OFFLINE_URL = "/offline";
 const PUBLIC_ASSET_PATHS = new Set([
