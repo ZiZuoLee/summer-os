@@ -261,6 +261,7 @@ export function AppShell({
                 <Link
                   key={`${href}-sheet`}
                   href={href}
+                  onClick={() => queueMicrotask(() => setMoreOpen(false))}
                   onNavigate={() => setMoreOpen(false)}
                   className="flex min-h-20 flex-col items-start justify-between rounded-2xl border border-border bg-surface-raised p-3.5 text-sm font-semibold hover:border-primary/35 hover:bg-primary-soft"
                 >

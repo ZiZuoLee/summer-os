@@ -17,7 +17,9 @@ const protectedPrefixes = [
   "/onboarding",
 ];
 
-const authPaths = ["/login", "/signup", "/forgot-password", "/update-password"];
+// A recovery link creates an authenticated recovery session before sending the
+// user to /update-password, so that route must remain reachable while signed in.
+const authPaths = ["/login", "/signup", "/forgot-password"];
 
 export async function updateSession(request: NextRequest) {
   const path = request.nextUrl.pathname;

@@ -86,6 +86,8 @@ select results_eq(
 select throws_ok(
   $$insert into public.daily_logs (user_id, log_date, weight_kg, weight_skipped)
     values ('10000000-0000-0000-0000-000000000001', '2031-01-02', 79, false)$$,
+  '42501',
+  'new row violates row-level security policy for table "daily_logs"',
   'cross-user insert is rejected by RLS'
 );
 
@@ -104,6 +106,8 @@ select throws_ok(
       '20000000-0000-0000-0000-000000000002', id, '2031-02-01', 'FLEX_DAY', 'LOW', 'forged'
     from public.plan_cycles
     where user_id = '10000000-0000-0000-0000-000000000001'$$,
+  '23503',
+  'insert or update on table "daily_plans" violates foreign key constraint "daily_plans_cycle_owner_fk"',
   'composite ownership FK rejects a forged parent'
 );
 

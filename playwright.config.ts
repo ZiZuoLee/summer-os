@@ -1,6 +1,6 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3100";
+const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3100";
 const realAuth = process.env.E2E_REAL_AUTH === "true";
 const systemChrome = process.env.PLAYWRIGHT_USE_SYSTEM_CHROME === "true";
 

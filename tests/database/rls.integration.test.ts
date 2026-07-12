@@ -54,7 +54,11 @@ integration("Supabase ownership and transactional RPCs", () => {
 
     const createSignedInClient = async (email: string) => {
       const client = createClient<Database>(url, anonKey, {
-        auth: { autoRefreshToken: false, persistSession: false },
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+          storageKey: `summer-os-rls-${email}`,
+        },
       });
       const { error } = await client.auth.signInWithPassword({
         email,
@@ -70,7 +74,9 @@ integration("Supabase ownership and transactional RPCs", () => {
       endDate: "2030-01-20",
       timezone: "Asia/Singapore",
     });
-    const payloadHash = flexFixture.payloadHash;
+    // Direct fixture inserts use the database's SHA-256 storage format. The
+    // production seed RPC computes this value server-side from the payload.
+    const payloadHash = "a".repeat(64);
     const { data: cycle, error: cycleError } = await userA
       .from("plan_cycles")
       .insert({
