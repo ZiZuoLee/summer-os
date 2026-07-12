@@ -20,6 +20,10 @@ const helpers = readFileSync(
   join(migrationDirectory, "202607110004_safe_plan_helpers.sql"),
   "utf8",
 );
+const healthCheck = readFileSync(
+  join(migrationDirectory, "202607130005_health_check.sql"),
+  "utf8",
+);
 
 const userTables = [
   "profiles",
@@ -126,5 +130,15 @@ describe("database migrations", () => {
       expect(schema).toContain(`${column} boolean not null default false`);
       expect(rpcs).toContain(column);
     }
+  });
+
+  it("defines a non-sensitive database health probe", () => {
+    expect(healthCheck).toContain("function public.health_check()");
+    expect(healthCheck).toContain(
+      "grant execute on function public.health_check()",
+    );
+    expect(healthCheck).not.toMatch(
+      /from public\.(profiles|daily_logs|daily_plans)/,
+    );
   });
 });

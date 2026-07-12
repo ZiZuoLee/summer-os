@@ -55,7 +55,7 @@ Record the date, commit, command, and result after the final integrated implemen
 - [ ] Production Supabase Free project created in Singapore; migrations pending
 - [ ] Brevo SMTP verification and reset deliveries confirmed
 - [ ] Turnstile host restrictions and server-side validation confirmed
-- [x] Protected Vercel Hobby staging preview created with non-production credentials only
+- [x] Noindex Vercel Hobby staging preview created with non-production credentials only
 - [ ] Production `*.vercel.app` deployment completed from `main`
 - [ ] Encrypted production backup created and restore-tested
 - [ ] Production smoke test and 30-minute observation recorded in `DEPLOYMENT.md`
@@ -64,7 +64,7 @@ Record the date, commit, command, and result after the final integrated implemen
 ## Current deployment record
 
 - Production URL: **Not deployed**
-- Staging URL: **https://summer-os-staging.vercel.app** (Vercel authentication protected)
+- Staging URL: **https://summer-os-staging.vercel.app** (public noindex; synthetic staging data only)
 - Production Supabase project: **Created in Singapore; not linked**
 - Non-production Supabase project: **Linked; migrations 202607110001–202607110004 applied**
 - Latest production migration: **None recorded**

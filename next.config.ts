@@ -1,7 +1,6 @@
 import type { NextConfig } from "next";
 
 const isDevelopment = process.env.NODE_ENV === "development";
-const isProtectedPreview = process.env.APP_ENV === "staging";
 const scriptSrc = [
   "'self'",
   "'unsafe-inline'",
@@ -15,7 +14,7 @@ const contentSecurityPolicy = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' blob: data:",
   "font-src 'self' data:",
-  `connect-src 'self' https://*.supabase.co wss://*.supabase.co https://challenges.cloudflare.com${isProtectedPreview ? " https://vercel.com" : ""}`,
+  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://challenges.cloudflare.com",
   "frame-src https://challenges.cloudflare.com",
   "worker-src 'self' blob:",
   "manifest-src 'self'",
