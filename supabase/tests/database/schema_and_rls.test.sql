@@ -1,14 +1,16 @@
 begin;
 
 create extension if not exists pgtap with schema extensions;
-set local search_path = public, extensions, pg_catalog;
-select plan(13);
+-- Hosted Supabase may install pgTAP in its dedicated `pgtap` schema while the
+-- local stack installs it in `extensions`; support both locations.
+set local search_path = public, extensions, pgtap, pg_catalog;
+select extensions.plan(13);
 
-select has_table('public', 'profiles', 'profiles table exists');
-select has_table('public', 'daily_plans', 'daily_plans table exists');
-select has_table('public', 'daily_logs', 'daily_logs table exists');
+select extensions.has_table('public', 'profiles', 'profiles table exists');
+select extensions.has_table('public', 'daily_plans', 'daily_plans table exists');
+select extensions.has_table('public', 'daily_logs', 'daily_logs table exists');
 
-select ok(
+select extensions.ok(
   not exists (
     select 1
     from pg_catalog.pg_class as relation
@@ -26,23 +28,23 @@ select ok(
   'RLS is enabled on every public user-owned table'
 );
 
-select has_function(
+select extensions.has_function(
   'public', 'seed_plan_cycle', array['text', 'text', 'date', 'date', 'jsonb', 'text'],
   'seed_plan_cycle RPC exists'
 );
-select has_function(
+select extensions.has_function(
   'public', 'submit_daily_checkin', array['text', 'jsonb', 'jsonb', 'jsonb'],
   'submit_daily_checkin RPC exists'
 );
-select has_function(
+select extensions.has_function(
   'public', 'set_task_status', array['uuid', 'text', 'bigint'],
   'set_task_status RPC exists'
 );
-select has_function(
+select extensions.has_function(
   'public', 'duplicate_plan_day', array['date', 'date'],
   'duplicate_plan_day RPC exists'
 );
-select has_function(
+select extensions.has_function(
   'public', 'reset_plan_progress', array['uuid', 'text'],
   'reset_plan_progress RPC exists'
 );
@@ -71,19 +73,19 @@ values
 
 set local role authenticated;
 set local request.jwt.claim.sub = '10000000-0000-0000-0000-000000000001';
-select results_eq(
+select extensions.results_eq(
   $$select count(*) from public.daily_logs$$,
   array[1::bigint],
   'user A sees only their row'
 );
 
 set local request.jwt.claim.sub = '20000000-0000-0000-0000-000000000002';
-select results_eq(
+select extensions.results_eq(
   $$select count(*) from public.daily_logs$$,
   array[1::bigint],
   'user B sees only their row'
 );
-select throws_ok(
+select extensions.throws_ok(
   $$insert into public.daily_logs (user_id, log_date, weight_kg, weight_skipped)
     values ('10000000-0000-0000-0000-000000000001', '2031-01-02', 79, false)$$,
   '42501',
@@ -99,7 +101,7 @@ insert into public.plan_cycles (
   'UTC', '2031-02-01', '2031-02-07', repeat('a', 64),
   jsonb_build_array('{}'::jsonb, '{}'::jsonb, '{}'::jsonb, '{}'::jsonb, '{}'::jsonb, '{}'::jsonb, '{}'::jsonb)
 );
-select throws_ok(
+select extensions.throws_ok(
   $$insert into public.daily_plans (
       user_id, plan_cycle_id, plan_date, day_category, intensity, title
     ) select
@@ -111,5 +113,5 @@ select throws_ok(
   'composite ownership FK rejects a forged parent'
 );
 
-select * from finish();
+select * from extensions.finish();
 rollback;
