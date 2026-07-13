@@ -961,7 +961,14 @@ export async function deleteAccountAction(
     };
   }
   const { error } = await admin.auth.admin.deleteUser(user.id, false);
-  if (error) return { status: "error", message: "账号删除失败，请稍后重试。" };
+  if (error) {
+    console.error("Account deletion admin request failed", {
+      name: error.name,
+      status: error.status,
+      code: error.code,
+    });
+    return { status: "error", message: "账号删除失败，请稍后重试。" };
+  }
   await supabase.auth.signOut();
   redirect("/?deleted=1");
 }

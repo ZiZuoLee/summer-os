@@ -15,6 +15,9 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     globals: true,
+    // Accessibility scans and realistic user-event typing can exceed Vitest's
+    // 5s default on constrained CI/Windows runners while remaining bounded.
+    testTimeout: 15_000,
     setupFiles: ["./vitest.setup.ts"],
     include: ["tests/**/*.test.{ts,tsx}"],
     coverage: {

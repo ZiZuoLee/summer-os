@@ -62,6 +62,7 @@ export function GreProgramForm() {
       </label>
       {state.message ? (
         <p
+          role={state.status === "success" ? "status" : "alert"}
           className={
             state.status === "success"
               ? "auth-message-success sm:col-span-2"

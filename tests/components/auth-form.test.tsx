@@ -86,7 +86,9 @@ describe("AuthForm", () => {
 
     await waitFor(() => expect(action).toHaveBeenCalledTimes(1));
     expect(seenTokens).toEqual(["verified-token"]);
-    expect(screen.getByRole("status")).toHaveTextContent("请求已安全提交");
+    expect(await screen.findByRole("status")).toHaveTextContent(
+      "请求已安全提交",
+    );
 
     await user.click(screen.getByRole("button", { name: "令牌过期" }));
     expect(

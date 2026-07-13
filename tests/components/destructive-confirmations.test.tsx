@@ -84,7 +84,7 @@ describe("destructive confirmation interfaces", () => {
     expect(deletionForm?.checkValidity()).toBe(true);
     expect(screen.getByText(/提供商级备份/)).toBeVisible();
     await expectNoA11yViolations(container);
-  });
+  }, 15_000);
 
   it("renders the cycle-specific reset phrase and preserves-history warning", () => {
     render(

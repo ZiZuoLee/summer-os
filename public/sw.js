@@ -1,8 +1,10 @@
 /* Summer OS caches public static assets only. Authenticated data is never cached. */
 const CACHE_PREFIX = "summer-os-static-";
-const CACHE_VERSION = "v2";
+const CACHE_VERSION = "v3";
 const STATIC_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}`;
-const OFFLINE_URL = "/offline";
+// Use a standalone document so Next.js cannot try to hydrate the failed
+// authenticated route while the browser is offline.
+const OFFLINE_URL = "/offline.html";
 const PUBLIC_ASSET_PATHS = new Set([
   "/manifest.webmanifest",
   "/icon",
