@@ -2,7 +2,7 @@
 
 This is the honest release ledger for Summer OS. A checked item means evidence exists in the repository or in the command/deployment record below; it is not a forecast.
 
-Last documentation update: 2026-07-13 (Asia/Singapore)
+Last documentation update: 2026-07-14 (Asia/Singapore)
 
 ## Delivery checklist
 
@@ -54,7 +54,7 @@ Record the date, commit, command, and result after the final integrated implemen
 ### Environments and launch
 
 - [x] Non-production Supabase Free project created in Singapore and migrations applied
-- [ ] Production Supabase Free project created in Singapore; migrations pending
+- [x] Production Supabase Free project created in Singapore and migrations applied
 - [ ] Brevo SMTP verification and reset deliveries confirmed
 - [ ] Turnstile host restrictions and server-side validation confirmed
 - [x] Noindex Vercel Hobby staging preview created with non-production credentials only
@@ -67,9 +67,9 @@ Record the date, commit, command, and result after the final integrated implemen
 
 - Production URL: **Not deployed**
 - Staging URL: **https://summer-os-staging.vercel.app** (public noindex; synthetic staging data only)
-- Production Supabase project: **Created in Singapore; not linked**
+- Production Supabase project: **Linked and migrated; application production launch intentionally paused**
 - Non-production Supabase project: **Linked; migrations 202607110001–202607130005 applied**
-- Latest production migration: **None recorded**
+- Latest production migration: **202607130005**
 - Latest verified backup: **None recorded**
 - Public registration: **Closed until launch checks pass**
 
